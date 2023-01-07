@@ -67,5 +67,5 @@ data = request_object.data
 headers = request_object.headers
 
 #Make the call with the signature added
-response = requests.request(method, url, headers=headers, data=data)
-print("LAMBDA FUNCTION RESPONSE", response.text, sep="")
+response = requests.request(method, url, headers=headers, data=json.dumps(data))
+print("\nLAMBDA FUNCTION RESPONSE\n", response.text, sep="")
