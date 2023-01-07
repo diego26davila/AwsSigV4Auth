@@ -59,11 +59,14 @@ print("CANONICAL REQUEST:\n", signerv4.canonical_request(request_object_copy), s
 signerv4.add_auth(request_object)
 
 #Show the updated request with the authentication data
-print("REQUEST WITH AUTH DATA:\n", f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}', sep="")
+print("\nREQUEST WITH AUTH DATA:\n", f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}', sep="")
 
 method = request_object.method
 url = request_object.url
-data = request_object.data
+if signature_version == "v4":
+  data = json.dumps(request_object.data)
+elif signature_version == "v4-query":
+  data = request_object.data
 headers = request_object.headers
 
 #Make the call with the signature added
