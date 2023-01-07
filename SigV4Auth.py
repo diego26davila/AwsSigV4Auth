@@ -53,13 +53,13 @@ datetime_now = datetime.datetime.utcnow()
 request_object_copy.context['timestamp'] = datetime_now.strftime('%Y%m%dT%H%M%SZ')
 
 signerv4._modify_request_before_signing(request_object_copy)
-print(signerv4.canonical_request(request_object_copy))
+print("CANONICAL REQUEST\n", signerv4.canonical_request(request_object_copy))
 
 #Sign the request
 signerv4.add_auth(request_object)
 
 #Show the updated request with the authentication data
-print(f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}')
+print("REQUEST WITH AUTH DATA\n", f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}')
 
 method = request_object.method
 url = request_object.url
