@@ -5,7 +5,7 @@ import json, datetime, copy
 
 #Define the request to be signed with the endpoint_url, request_dict, context (sig. version, region, service name)
 
-endpoint_url = "https://dvf7otbp6ofm5yrz6obimom7cq0rdhsq.lambda-url.sa-east-1.on.aws/"
+endpoint_url = "https://gymhyjc5xavlnxnuozjnufrwsu0qwpxm.lambda-url.us-east-1.on.aws/"
 
 request_dict = {
     'method': "POST", 
@@ -35,8 +35,8 @@ service_id = model.ServiceId(signing_name)
 signature_version = request_object.context['signing']['signature_version']
 
 #Add the IAM user credentials. If a IAM role is used instead, you must add the `session_token`.
-access_key = "AKIAT2PB64KJXH353H73"                                                        
-secret_key = "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"                                    
+access_key =  "add-iam-user-access-key"                                                     
+secret_key =  "add-iam-user-secret-key"                                  
 _credentials = credentials.Credentials(access_key, secret_key)
 
 #You must use this as a param in the next instance creation.
