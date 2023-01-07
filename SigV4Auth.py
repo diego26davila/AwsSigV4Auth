@@ -19,7 +19,7 @@ context = {
     'signing': {
         'signature_version': 'v4-query', #"v4" for sending the authorization as request headers or "v4-query" for sending it as query params in the URL
         'signing_name': 'lambda', 
-        'region': 'sa-east-1'}
+        'region': 'us-east-1'}
         }
 
 #Instantiate the AWSRequest class with `create_request_object` method
@@ -53,13 +53,13 @@ datetime_now = datetime.datetime.utcnow()
 request_object_copy.context['timestamp'] = datetime_now.strftime('%Y%m%dT%H%M%SZ')
 
 signerv4._modify_request_before_signing(request_object_copy)
-print("CANONICAL REQUEST\n", signerv4.canonical_request(request_object_copy))
+print("CANONICAL REQUEST:\n", signerv4.canonical_request(request_object_copy), sep="")
 
 #Sign the request
 signerv4.add_auth(request_object)
 
 #Show the updated request with the authentication data
-print("REQUEST WITH AUTH DATA\n", f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}')
+print("REQUEST WITH AUTH DATA:\n", f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}', sep="")
 
 method = request_object.method
 url = request_object.url
@@ -68,4 +68,4 @@ headers = request_object.headers
 
 #Make the call with the signature added
 response = requests.request(method, url, headers=headers, data=data)
-print(response.text)
+print("LAMBDA FUNCTION RESPONSE", response.text, sep="")
