@@ -70,5 +70,5 @@ elif signature_version == "v4-query":
 headers = request_object.headers
 
 #Make the call with the signature added
-response = requests.request(method, url, headers=headers, data=json.dumps(data))
+response = requests.request(method, url, headers=headers, data=data)
 print("\nLAMBDA FUNCTION RESPONSE\n", response.text, sep="")
