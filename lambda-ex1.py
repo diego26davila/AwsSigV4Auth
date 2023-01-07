@@ -21,6 +21,11 @@ def lambda_handler(event, context):
         
         a = int(query_string['num1'])
         b = int(query_string['num2'])
+
+    else:
+
+        a = event["num1"]
+        b = event["num2"]
         
     response = {
         "sum": a + b,
@@ -29,5 +34,5 @@ def lambda_handler(event, context):
     
     return {
         'statusCode': 200,
-        'body': json.dumps(response)
+        'body': response
     }
