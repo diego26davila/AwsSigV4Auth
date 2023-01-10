@@ -1,7 +1,7 @@
-from botocore import signers, awsrequest, credentials, auth
+from botocore import awsrequest, credentials, signers, auth
 import requests
 
-import json, datetime, copy
+import json, copy, datetime
 
 
 #EXAMPLE: Request that invoke the lambda function `example1` with AWS_IAM authentication.
@@ -44,8 +44,8 @@ def makeRequestWithAuth(endpoint_url, request_dict, context):
   service_name = request_object.context['signing']['service']
   expires = request_object.context['signing']['expires']    #Expiration only works for Auth as query string and for some specific services (e.g S3)
                                                                                     
-  access_key = "AKIAT2PB64KJTMGDOQ6N"                                                         
-  secret_key = "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"                             
+  access_key = "iam-user-access-key"                                                     
+  secret_key = "iam-user-secret-key"                        
   _credentials = credentials.Credentials(access_key, secret_key)
 
 
