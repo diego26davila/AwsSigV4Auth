@@ -1,4 +1,5 @@
 import json, base64
+from urllib.parse import parse_qs
 
 def lambda_handler(event, context):
     
@@ -21,11 +22,17 @@ def lambda_handler(event, context):
         
         a = int(query_string['num1'])
         b = int(query_string['num2'])
-
+        
     else:
-
-        a = event["num1"]
-        b = event["num2"]
+        
+        if not hasattr(event, "items"):
+            _event = parse_qs(event)
+            
+            a = _event['num1'][0]
+            a = _event['num1'][0]
+            
+        a = event['num1']
+        b = event['num2']
         
     response = {
         "sum": a + b,

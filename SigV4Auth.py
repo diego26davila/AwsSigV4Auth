@@ -3,72 +3,81 @@ import requests
 
 import json, datetime, copy
 
-#Define the request to be signed with the endpoint_url, request_dict, context (sig. version, region, service name)
 
-endpoint_url = "https://gymhyjc5xavlnxnuozjnufrwsu0qwpxm.lambda-url.us-east-1.on.aws/"
+#EXAMPLE: Request that invoke the lambda function `example1` with AWS_IAM authentication.
 
+
+endpoint_url = "https://lambda.us-east-1.amazonaws.com"
+
+
+request_dict_body = {"num1": 15, "num2": 20}
 request_dict = {
     'method': "POST", 
-    'url_path': '/', 
-    'body': {'num1': 10, 'num2': 11},
+    'url_path': '/2015-03-31/functions/example1/invocations', 
+    'body': json.dumps(request_dict_body),
     'headers': {},
     'query_string': {}
     }
 
 context = {
     'signing': {
-        'signature_version': 'v4-query', #"v4" for sending the authorization as request headers or "v4-query" for sending it as query params in the URL
-        'signing_name': 'lambda', 
-        'region': 'us-east-1'}
+        'auth_as': 'header',       #can only have one of two values: "header" or "query"
+        'service': 'lambda', 
+        'region': 'us-east-1',
+        "expires": 86400}
         }
 
-#Instantiate the AWSRequest class with `create_request_object` method
 
-awsrequest.prepare_request_dict(request_dict, endpoint_url, context)
-request_object = awsrequest.create_request_object(request_dict)
+def makeRequestWithAuth(endpoint_url, request_dict, context):
 
-#Read some values from the request context
+  if context['signing']['auth_as'] not in ['header', 'query']:
+      #raise Exception("'auth_as' param can only have one of these values ['header', 'query']")
+      error_message = "'auth_as' param can only have one of these values ['header', 'query']"
 
-region_name = request_object.context['signing']['region']
-signing_name = request_object.context['signing']['signing_name']
-service_id = model.ServiceId(signing_name)
-signature_version = request_object.context['signing']['signature_version']
+      return { "statusCode": 400, "body": json.dumps(error_message)}
 
-#Add the IAM user credentials. If a IAM role is used instead, you must add the `session_token`.
-access_key =  "add-iam-user-access-key"                                                     
-secret_key =  "add-iam-user-secret-key"                                  
-_credentials = credentials.Credentials(access_key, secret_key)
-
-#You must use this as a param in the next instance creation.
-event_emitter = hooks.HierarchicalEmitter()
-
-signer = signers.RequestSigner(service_id, region_name, signing_name, signature_version, _credentials, event_emitter)
-signerv4 = signer.get_auth_instance(signing_name, region_name)
+  awsrequest.prepare_request_dict(request_dict, endpoint_url, context)
+  request_object = awsrequest.create_request_object(request_dict)
+   
+  auth_as = request_object.context['signing']['auth_as']
+  region_name = request_object.context['signing']['region']
+  service_name = request_object.context['signing']['service']
+  expires = request_object.context['signing']['expires']    #Expiration only works for Auth as query string and for some specific services (e.g S3)
+                                                                                    
+  access_key = "iam-user-access-key"                                                         
+  secret_key = "iam-user-secret-key"                             
+  _credentials = credentials.Credentials(access_key, secret_key)
 
 
-#If you want to get the canonical request to be signed, do the following
-request_object_copy = copy.deepcopy(request_object)
+  if auth_as == "header":
+    sigv4 = auth.SigV4Auth(_credentials, service_name, region_name)
+  elif auth_as == "query":
+    sigv4 = auth.SigV4QueryAuth(_credentials, service_name, region_name, expires)
 
-datetime_now = datetime.datetime.utcnow()
-request_object_copy.context['timestamp'] = datetime_now.strftime('%Y%m%dT%H%M%SZ')
+  #Add this block of code if you want to see the canonical request, which will be used to create the STRING TO SIGN
 
-signerv4._modify_request_before_signing(request_object_copy)
-print("CANONICAL REQUEST:\n", signerv4.canonical_request(request_object_copy), sep="")
+  import datetime
 
-#Sign the request
-signerv4.add_auth(request_object)
+  datetime_now = datetime.datetime.utcnow()
+  request_object.context['timestamp'] = datetime_now.strftime('%Y%m%dT%H%M%SZ')
 
-#Show the updated request with the authentication data
-print("\nREQUEST WITH AUTH DATA:\n", f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.data}', sep="")
+  sigv4._modify_request_before_signing(request_object)
+  canonical_request = sigv4.canonical_request(request_object)
+  print("-----------------CANONICAL REQUEST-----------------\n",canonical_request, sep="")
 
-method = request_object.method
-url = request_object.url
-if signature_version == "v4":
-  data = json.dumps(request_object.data)
-elif signature_version == "v4-query":
-  data = request_object.data
-headers = request_object.headers
+  #--------------------End of block------------------------
 
-#Make the call with the signature added
-response = requests.request(method, url, headers=headers, data=data)
-print("\nLAMBDA FUNCTION RESPONSE\n", response.text, sep="")
+  sigv4.add_auth(request_object)
+  print('\n\n-----------------REQUEST WITH AUTH DATA-----------------\n',f'{request_object.method}\n{request_object.url}\n{request_object.params}\n{request_object.headers}\n{request_object.body}', sep="")
+
+  method = request_object.method
+  url = request_object.url
+  data = request_object.body
+  headers = request_object.headers
+
+  print("dataaaaaaaa",request_object.data)
+  response = requests.request(method, url, headers=headers, data=data)
+  print(f'\n\n-----------------RESPONSE-----------------\n', response.text, sep="")
+  return response
+
+makeRequestWithAuth(endpoint_url, request_dict, context)
